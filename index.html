@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: rgb(67, 67, 67);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    #buttons{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 20px;
+    }
+    #buttons button{
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px #000000;
+    }
+    #buttons button:active{
+        background-color: #45a049;
+        transform: scale(0.96);
+    }
+    #buttons button:hover{
+        background-color: #a04545;
+    }
+</style>
+<body>
+    <div id="buttons">
+        <button id="stop">Stop</button>
+        <button id="play">Play</button>
+    </div>
+    <canvas id="curva"></canvas>
+    <script>
+        // Obtén el elemento canvas y su contexto
+        const canvas = document.getElementById('curva');
+        const ctx = canvas.getContext('2d');
+        const stop = document.querySelector('#stop');
+        const play = document.querySelector('#play');
+        canvas.width = window.innerWidth/1.2;
+        canvas.height = window.innerHeight/1.5;
+        let face = 0;
+        const colors = ['red', 'magneta', 'yellow', 'green', 'orange'];
+
+        // creacion de la clase
+        class Curva {
+            constructor(funcion, color, dx = 0) {
+                this.funcion = funcion;
+                this.color = color;
+                this.dx = dx;
+            }
+            dibujar() {
+                ctx.beginPath();
+                for (let x = 0; x < canvas.width; x++) {
+                    let y = this.funcion(x, this.dx);
+                    ctx.strokeStyle = this.color;
+                    ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+            incrementarFase() {
+                this.dx += 0.01;
+            }
+        }
+
+        const funcionesSinuidales = [
+            // tus funciones aquíconst funcionesSinuidales = [
+            (x, dx) => 100 * Math.sin(.05 * x + dx) + 300,
+            (x, dx) => 100 * Math.cos(.01 * x + dx) + 300 + 100 * Math.sin(.05 * x + dx),
+            (x, dx) => 100 * Math.sin(.03 * x + dx) + 300 + 100 * Math.cos(.02 * x + dx),
+            (x, dx) => 100 * Math.cos(.06 * x + dx) + 300 + 100 * Math.sin(.02 * x + dx),
+            (x, dx) => 100 * Math.sin(.04 * x + dx) + 300 + 100 * Math.cos(.07 * x + dx),
+            (x, dx) => 100 * Math.cos(.08 * x + dx) + 100 + 100 * Math.sin(.01 * x + dx),
+            (x, dx) => 100 * Math.sin(.09 * x + dx) + 300 + 100 * Math.cos(.09 * x + dx),
+            (x, dx) => 100 * Math.sin(.07 * x + dx) + 300 + 100 * Math.cos(.01 * x + dx) + 100 * Math.sin(.07 * x + dx),
+            (x, dx) => 100 * Math.cos(.04 * x + dx) + 300 + 100 * Math.sin(.03 * x + dx) + 100 * Math.cos(.04 * x + dx),
+            (x, dx) => 100 * Math.sin(.02 * x + dx) + 300 + 100 * Math.cos(.06 * x + dx) + 100 * Math.sin(.02 * x + dx),
+            (x, dx) => 100 * Math.cos(.03 * x + dx) + 300 + 100 * Math.sin(.09 * x + dx) + 100 * Math.cos(.03 * x + dx),
+            (x, dx) => 100 * Math.sin(.05 * x + dx) + 300 + 100 * Math.cos(.08 * x + dx) + 100 * Math.sin(.05 * x + dx),
+            (x, dx) => 100 * Math.cos(.01 * x + dx) + 300 + 100 * Math.sin(.08 * x + dx) + 100 * Math.cos(.02 * x + dx) + 40 * Math.sin(.05 * x + dx),
+            (x, dx) => 100 * Math.sin(.09 * x + dx) + 300 + 100 * Math.cos(.02 * x + dx) + 100 * Math.sin(.09 * x + dx) + 40 * Math.cos(.05 * x + dx),
+            (x, dx) => 100 * Math.cos(.01 * x + dx) + 300 + 100 * Math.sin(.05 * x + dx) + 100 * Math.cos(.05 * x + dx) + 40 * Math.sin(.05 * x + dx),
+            (x, dx) => 100 * Math.sin(.05 * x + dx) + 300 + 100 * Math.cos(.03 * x + dx) + 100 * Math.sin(.01 * x + dx) + 40 * Math.cos(.05 * x + dx),
+        ];
+
+        let curvas = [];
+
+        function generarCurvas() {
+            curvas = [];
+            for (let i = 0; i < funcionesSinuidales.length; i++) {
+                face += .01;
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                curvas.push(new Curva(funcionesSinuidales[i], randomColor, face));
+            }
+        }
+
+        function dibujarCurvas() {
+            for (let i = 0; i < curvas.length; i++) {
+                curvas[i].dibujar();
+                curvas[i].incrementarFase();
+            }
+            // Llena el canvas con un color semi-transparente
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function animate() {
+            generarCurvas();
+            dibujarCurvas();
+            requestAnimationFrame(animate);
+        }
+
+        stop.addEventListener('click', () => {
+            cancelAnimationFrame(animate);
+        });
+
+        // Comienza la animación
+        animate();
+    </script>
+</body>
+
+</html>
